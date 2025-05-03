@@ -1,0 +1,3 @@
+[submodule "erie"]
+	path = erie
+	url = https://github.com/danutek/erie.git
