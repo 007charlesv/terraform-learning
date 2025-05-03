@@ -1,0 +1,83 @@
+# Commands Used to Resolve GitHub Push Issue
+
+## Diagnostic Commands
+
+1. `git status`
+   - Checks the status of the git repository
+   - Shows which files are staged, unstaged, or untracked
+
+2. `git remote -v`
+   - Lists all remote repositories configured for your local git repository
+   - Shows the fetch and push URLs for each remote
+
+3. `ls -la`
+   - Lists all files in the directory, including hidden files
+   - Shows file permissions, owner, size, and modification date
+
+4. `git branch -vv`
+   - Shows local branches with more detailed information
+   - Displays tracking relationships between local and remote branches
+
+## Initial Solution Attempt
+
+5. `git branch --set-upstream-to=github/master master`
+   - Attempts to set up tracking between local master branch and remote github/master branch
+   - Failed because the remote branch didn't exist yet
+
+6. `git push -u github master`
+   - Pushes the local master branch to the github remote
+   - Sets up tracking at the same time
+   - Failed due to large files in the .terraform directory
+
+## Fix by Removing .terraform from Git Tracking
+
+7. `echo ".terraform/" >> .gitignore`
+   - Adds the .terraform/ directory to .gitignore
+   - Prevents future commits from including this directory
+
+8. `git rm -r --cached .terraform && git commit -m "Remove .terraform directory from version control"`
+   - Removes the .terraform directory from git tracking without deleting it from disk
+   - Creates a commit with the removal
+
+9. Creation of a complete .gitignore file for Terraform:
+```
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude provider binary
+*.tfvars
+*.tfvars.json
+
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+```
+
+## Fix by Cleaning Git History
+
+10. `git filter-branch --force --index-filter 'git rm -r --cached --ignore-unmatch .terraform/' --prune-empty --tag-name-filter cat -- --all && git gc --aggressive && git prune`
+    - Rewrites git history to completely remove the .terraform directory from all previous commits
+    - `--force`: Forces the operation even if it's potentially destructive
+    - `--index-filter`: Applies the specified command to each commit's index
+    - `git rm -r --cached --ignore-unmatch .terraform/`: Removes .terraform directory from each commit
+    - `--prune-empty`: Removes commits that become empty after the filter
+    - `--tag-name-filter cat`: Rewrites tags to point to the new commits
+    - `-- --all`: Applies to all refs/branches
+    - `git gc --aggressive`: Runs garbage collection to clean up unnecessary files
+    - `git prune`: Removes unreachable objects
+
+11. `git push -f github master`
+    - Force pushes the rewritten master branch to GitHub
+    - `-f`: Force flag that overwrites the remote history with local history
+    - This succeeded because the large files were completely removed from git history
+
