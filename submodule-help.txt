@@ -1,0 +1,95 @@
+# Git Submodule Management Guide
+
+## Adding a Submodule
+
+# Add a repository as a submodule
+git submodule add <repository_url> <path>
+
+# Example:
+git submodule add https://github.com/danutek/erie.git erie
+
+# To add a specific branch of a repository as a submodule
+git submodule add -b <branch> <repository_url> <path>
+
+## Converting an existing directory to a submodule
+
+# 1. Remove the directory from git tracking without deleting files
+git rm --cached <path>
+# If there are staged changes, use the force flag
+git rm -f --cached <path>
+
+# 2. Add the directory as a submodule
+git submodule add <repository_url> <path>
+
+# 3. Commit the changes
+git add .gitmodules <path>
+git commit -m "Add <path> as submodule"
+
+# 4. Push the changes to remote
+git push origin <branch>
+
+## Cloning a Repository with Submodules
+
+# Clone and initialize submodules in one command
+git clone --recurse-submodules <repository_url>
+
+# If you've already cloned the repository, initialize and update all submodules
+git submodule init
+git submodule update
+
+# Initialize, fetch, and checkout submodules in one command
+git submodule update --init --recursive
+
+## Updating Submodules
+
+# Update all submodules to latest commit on their tracked branch
+git submodule update --remote
+
+# Update a specific submodule
+git submodule update --remote <path>
+
+# Pull all changes in the submodules
+git pull --recurse-submodules
+
+## Working with Submodules
+
+# List all submodules
+git submodule status
+
+# Execute a command in each submodule
+git submodule foreach '<command>'
+# Example: run git status in all submodules
+git submodule foreach 'git status'
+
+## Removing a Submodule
+
+# 1. Remove the submodule's entry in .gitmodules
+git submodule deinit <path>
+
+# 2. Remove the submodule from the working tree and index
+git rm <path>
+
+# 3. Remove the submodule's directory in .git/modules/
+rm -rf .git/modules/<path>
+
+# 4. Commit the changes
+git commit -m "Remove <path> submodule"
+
+## Troubleshooting Submodules
+
+# If a submodule is showing as modified when it's not:
+git submodule update --init --recursive
+
+# To see what changed in a submodule:
+git diff --submodule
+
+# To reset a submodule to the committed state:
+git submodule update --init --recursive -- <path>
+
+## Best Practices
+
+1. Always commit changes in the submodule first, then commit in the main repository.
+2. Use relative URLs in .gitmodules to make the repository easier to fork.
+3. Consider using `--recurse-submodules` when pulling or pushing to ensure all changes are synchronized.
+4. Keep submodules on stable branches or tags rather than on master/main when possible.
+
